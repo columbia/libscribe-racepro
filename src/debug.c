@@ -415,6 +415,18 @@ static char *get_res_desc(char *buf, size_t buf_size,
 	return buf;
 }
 
+static char *get_inject_action_str(int action)
+{
+	switch (action) {
+	case SCRIBE_INJECT_ACTION_SLEEP:
+		return "sleep";
+	case SCRIBE_INJECT_ACTION_PSFLAGS:
+		return "psflags";
+	default:
+		return "unknown action";
+	}
+}
+
 char *scribe_get_event_str(char *str, size_t size, struct scribe_event *event)
 {
 	char buffer1[4096];
@@ -452,6 +464,8 @@ char *scribe_get_event_str(char *str, size_t size, struct scribe_event *event)
 	       get_syscall_str(buffer1, e->nr),
 	       get_ret_str(buffer2, e->ret));
 	__TYPE(SCRIBE_EVENT_SYSCALL_END, "syscall ended");
+	__TYPE(SCRIBE_EVENT_INJECT_ACTION, "inject: %s arg1=%ld arg2=%ld",
+	       get_inject_action_str(e->action), (long) e->arg1, (long) e->arg2);
 	__TYPE(SCRIBE_EVENT_QUEUE_EOF, "queue EOF");
 	__TYPE(SCRIBE_EVENT_RESOURCE_LOCK,
 	       "resource lock, serial = %u", e->serial);
