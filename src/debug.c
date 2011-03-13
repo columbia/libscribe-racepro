@@ -285,9 +285,8 @@ static char *escape_str(char *buf, ssize_t buf_size,
 	return orig_buf;
 }
 
-static char *get_data_type_str(char *buf, int type)
+static char *__get_data_type_str(char *buf, int type)
 {
-	type &= ~SCRIBE_DATA_NEED_INFO;
 	switch(type) {
 		case 0: return "output";
 		case SCRIBE_DATA_INPUT: return "input";
@@ -300,6 +299,17 @@ static char *get_data_type_str(char *buf, int type)
 			sprintf(buf, "unknown (%02x)", type);
 			return buf;
 	}
+}
+
+static char *get_data_type_str(char *buf, int type)
+{
+	char tmp[100];
+
+	sprintf(buf, "%s%s",
+		__get_data_type_str(tmp, type & ~SCRIBE_DATA_NEED_INFO),
+		(type & SCRIBE_DATA_NEED_INFO) ? " (need_info)" : "");
+
+	return buf;
 }
 
 static char *get_diverge_data_str(char *buf, ssize_t buf_size, int offset,
@@ -351,7 +361,7 @@ static char *get_strv_str(char *buf, ssize_t buf_size,
 	return orig_buf;
 }
 
-static const char *get_res_raw_type_str(int type)
+static const char *get_res_raw_type_str(char *buf, size_t buf_size, int type)
 {
 	switch (type) {
 		case SCRIBE_RES_TYPE_INODE: return "inode";
@@ -361,17 +371,22 @@ static const char *get_res_raw_type_str(int type)
 		case SCRIBE_RES_TYPE_FUTEX: return "futex";
 		case SCRIBE_RES_TYPE_IPC: return "ipc";
 		case SCRIBE_RES_TYPE_MMAP: return "mmap";
-		default: return "unknown type";
+		case SCRIBE_RES_TYPE_PPID: return "ppid";
+		default:
+			snprintf(buf, buf_size, "unknown type %d", type);
+			return buf;
 	}
 }
 
 static char *get_res_type_str(char *buf, size_t buf_size, int type)
 {
+	char buffer[100];
 	int is_spinlock;
+
 	is_spinlock = type & SCRIBE_RES_SPINLOCK;
 	type &= SCRIBE_RES_TYPE_MASK;
 	snprintf(buf, buf_size, "%s%s",
-		 get_res_raw_type_str(type),
+		 get_res_raw_type_str(buffer, sizeof(buffer), type),
 		 is_spinlock ? " (spinlock)" : "");
 	return buf;
 }
@@ -492,6 +507,10 @@ char *scribe_get_event_str(char *str, size_t size, struct scribe_event *event)
 	       "signal send, cookie = %u", e->cookie);
 	__TYPE(SCRIBE_EVENT_SIG_RECV_COOKIE,
 	       "signal recv, cookie = %u", e->cookie);
+	__TYPE(SCRIBE_EVENT_SIG_HANDLED_COOKIE,
+	       "signal handled, cookie = %u", e->cookie);
+	__TYPE(SCRIBE_EVENT_SIG_HANDLED,
+	       "signal handled, signal = %s", get_signal_str(buffer1, e->nr));
 
 
 	__TYPE(SCRIBE_EVENT_ATTACH_ON_EXECVE,
@@ -502,12 +521,17 @@ char *scribe_get_event_str(char *str, size_t size, struct scribe_event *event)
 	       "start replaying, logfd = %d, backtrace_len = %d",
 	       e->log_fd, e->backtrace_len);
 	__TYPE(SCRIBE_EVENT_STOP, "stop request");
+	__TYPE(SCRIBE_EVENT_BOOKMARK_REQUEST, "bookmark request");
+	__TYPE(SCRIBE_EVENT_CHECK_DEADLOCK, "check deadlock");
+	__TYPE(SCRIBE_EVENT_RESUME, "resume");
 
 
 	__TYPE(SCRIBE_EVENT_BACKTRACE,
 	       "backtrace: offset = %lld", e->event_offset);
 	__TYPE(SCRIBE_EVENT_CONTEXT_IDLE,
 	       "context idle: error = %d", e->error);
+	__TYPE(SCRIBE_EVENT_BOOKMARK_REACHED,
+	       "bookmark reached, id = %d, npr = %d", e->id, e->npr);
 
 
 	__TYPE(SCRIBE_EVENT_DIVERGE_EVENT_TYPE,
