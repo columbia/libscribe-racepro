@@ -507,6 +507,10 @@ char *scribe_get_event_str(char *str, size_t size, struct scribe_event *event)
 	       "signal send, cookie = %u", e->cookie);
 	__TYPE(SCRIBE_EVENT_SIG_RECV_COOKIE,
 	       "signal recv, cookie = %u", e->cookie);
+	__TYPE(SCRIBE_EVENT_SIG_HANDLED_COOKIE,
+	       "signal handled, cookie = %u", e->cookie);
+	__TYPE(SCRIBE_EVENT_SIG_HANDLED,
+	       "signal handled, signal = %s", get_signal_str(buffer1, e->nr));
 
 
 	__TYPE(SCRIBE_EVENT_ATTACH_ON_EXECVE,
@@ -517,12 +521,17 @@ char *scribe_get_event_str(char *str, size_t size, struct scribe_event *event)
 	       "start replaying, logfd = %d, backtrace_len = %d",
 	       e->log_fd, e->backtrace_len);
 	__TYPE(SCRIBE_EVENT_STOP, "stop request");
+	__TYPE(SCRIBE_EVENT_BOOKMARK_REQUEST, "bookmark request");
+	__TYPE(SCRIBE_EVENT_CHECK_DEADLOCK, "check deadlock");
+	__TYPE(SCRIBE_EVENT_RESUME, "resume");
 
 
 	__TYPE(SCRIBE_EVENT_BACKTRACE,
 	       "backtrace: offset = %lld", e->event_offset);
 	__TYPE(SCRIBE_EVENT_CONTEXT_IDLE,
 	       "context idle: error = %d", e->error);
+	__TYPE(SCRIBE_EVENT_BOOKMARK_REACHED,
+	       "bookmark reached, id = %d, npr = %d", e->id, e->npr);
 
 
 	__TYPE(SCRIBE_EVENT_DIVERGE_EVENT_TYPE,
