@@ -390,17 +390,6 @@ static char *get_bookmark_type_str(char *buf, size_t buf_size, int type)
 	}
 }
 
-static char *get_bookmark_type_str(char *buf, size_t buf_size, int type)
-{
-	switch (type) {
-		case SCRIBE_BOOKMARK_PRE_SYSCALL: return "pre-syscall";
-		case SCRIBE_BOOKMARK_POST_SYSCALL: return "post-syscall";
-		default:
-			snprintf(buf, buf_size, "unknown type %d", type);
-			return buf;
-	}
-}
-
 static char *get_regs_str(char *buf, size_t buf_size, struct pt_regs *regs)
 {
 	snprintf(buf, buf_size,
